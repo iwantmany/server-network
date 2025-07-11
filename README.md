@@ -18,3 +18,32 @@ NHN클라우드를 이용한 인스턴스 생성
 <img width="1893" height="1013" alt="image" src="https://github.com/user-attachments/assets/0a572b43-cbf1-4676-924f-a91b511b9deb" />
 
 <img width="791" height="729" alt="image" src="https://github.com/user-attachments/assets/022436be-4d40-4f73-bfb3-18c963d160b2" />
+
+① Windows SQL Server 설정
+TCP/IP 포트 1433 열기
+
+SQL Server Configuration Manager > TCP/IP 활성화
+
+포트 1433 수동 설정
+
+Windows 방화벽 예외 등록
+
+TCP 1433 포트 허용
+
+SQL 인증 모드(sa)도 활성화 (선택 사항)
+
+SQL Server 인증 + 계정 생성 (sa 또는 webapp 계정)
+
+② 리눅스 측 설정
+JDK 설치
+
+Tomcat 설치 (또는 Java 프로젝트 실행 환경)
+
+Microsoft JDBC 드라이버 다운로드
+
+
+mssql-jdbc-xxx.jar를 Tomcat의 lib 폴더에 복사
+
+DB 연결 테스트
+
+간단한 JSP/Servlet 코드 or Java CLI 코드로 SQL 접속

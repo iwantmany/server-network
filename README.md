@@ -2,6 +2,10 @@
 
 NHN클라우드를 이용한 인스턴스 생성
 
+윈도우 : 192.168.0.56, 133.186.202.16
+리눅스 : 192.168.0.63, 133.186.200.103
+
+
 1. LINUX 서버생성
 ![image](https://github.com/user-attachments/assets/c75bfa0b-c250-4f9c-86af-91e0eee96633)
 ![image](https://github.com/user-attachments/assets/14409337-ae8d-4b64-af36-c02039a3a170)
@@ -33,6 +37,9 @@ TCP 1433 포트 허용
 SQL 인증 모드(sa)도 활성화 (선택 사항)
 
 SQL Server 인증 + 계정 생성 (sa 또는 webapp 계정)
+<img width="1398" height="317" alt="image" src="https://github.com/user-attachments/assets/0bcefcb2-174b-4809-8b36-889c519a4810" />
+
+<img width="752" height="402" alt="image" src="https://github.com/user-attachments/assets/73c96012-b87c-4c89-a748-235b15cb0df4" />
 
 ② 리눅스 측 설정
 JDK 설치
@@ -47,3 +54,36 @@ mssql-jdbc-xxx.jar를 Tomcat의 lib 폴더에 복사
 DB 연결 테스트
 
 간단한 JSP/Servlet 코드 or Java CLI 코드로 SQL 접속
+
+▶ 1. Microsoft 리포지터리 등록
+
+sudo curl -o /etc/yum.repos.d/mssql-tools.repo https://packages.microsoft.com/config/rhel/8/prod.repo
+▶ 2. mssql-tools + unixODBC 설치
+
+sudo dnf install -y mssql-tools unixODBC
+설치 중간에 라이선스 동의 메시지가 나오면 YES 입력
+
+▶ 3. sqlcmd 경로 등록 (선택)
+
+echo 'export PATH="$PATH:/opt/mssql-tools/bin"' >> ~/.bash_profile
+source ~/.bash_profile
+
+✅ 2단계: sqlcmd로 MSSQL 접속 시도
+
+sqlcmd -S 192.168.0.10 -U webapp -P '비밀번호'
+값들은 다음에 맞게 바꿔주세요:
+
+항목	입력 값
+-S	윈도우 SQL 서버의 사설 IP 주소 (예: 192.168.0.10)
+-U	SQL 로그인 계정 (예: webapp, sa, 등)
+-P	SQL 로그인 비밀번호
+
+✅ 3단계: 성공 시 화면
+1>
+
+<img width="781" height="226" alt="image" src="https://github.com/user-attachments/assets/24e5de61-2d84-4bf4-ae5b-7f289e474437" />
+
+<img width="1004" height="292" alt="image" src="https://github.com/user-attachments/assets/5ddd3b15-1a5a-45af-90c9-085147dd9619" />
+
+<img width="1496" height="163" alt="image" src="https://github.com/user-attachments/assets/1bcf6c0d-6552-40fb-812f-be04c5f8e299" />
+

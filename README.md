@@ -70,8 +70,8 @@ source ~/.bash_profile
 
 ✅ 2단계: sqlcmd로 MSSQL 접속 시도
 
-sqlcmd -S 192.168.0.10 -U webapp -P '비밀번호'
-값들은 다음에 맞게 바꿔주세요:
+sqlcmd -S 192.168.0.56 -U webapp -P '비밀번호'
+
 
 항목	입력 값
 -S	윈도우 SQL 서버의 사설 IP 주소 (예: 192.168.0.10)
@@ -86,4 +86,57 @@ sqlcmd -S 192.168.0.10 -U webapp -P '비밀번호'
 <img width="1004" height="292" alt="image" src="https://github.com/user-attachments/assets/5ddd3b15-1a5a-45af-90c9-085147dd9619" />
 
 <img width="1496" height="163" alt="image" src="https://github.com/user-attachments/assets/1bcf6c0d-6552-40fb-812f-be04c5f8e299" />
+
+방법: JDBC 드라이버 ZIP 다운로드 + 수동 설치
+📦 1. JDBC 드라이버 ZIP 다운로드
+
+cd /opt/tomcat9/lib
+sudo curl -L -O https://github.com/microsoft/mssql-jdbc/releases/download/v12.4.2/mssql-jdbc-12.4.2.jre11.jar
+✅ 이 명령은 실제 .jar만 받아오는 명령입니다.
+(버전 확인: java -version이 11대 → .jre11.jar)
+
+✅ 2. 다운로드 확인
+
+ls -lh /opt/tomcat9/lib/mssql-jdbc-12.4.2.jre11.jar
+→ 파일 크기가 수 MB 이상이면 OK (정상 다운로드)
+
+<img width="1657" height="664" alt="image" src="https://github.com/user-attachments/assets/89c62b7d-8845-4aac-a20a-9af4cc182934" />
+
+<%@ page import="java.sql.*" %>
+<html>
+<head><title>MSSQL 연결 테스트</title></head>
+<body>
+<%
+    String url = "jdbc:sqlserver://192.168.0.56:1433;databaseName=AdventureWorks2016;encrypt=true;trustServerCertificate=true;";
+    String user = "webapp";
+    String password = "rjdls123!";
+
+    try {
+        Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+        Connection conn = DriverManager.getConnection(url, user, password);
+        Statement stmt = conn.createStatement();
+        ResultSet rs = stmt.executeQuery("SELECT TOP 5 name FROM HumanResources.Department");
+
+        out.println("<h3>✅ 연결 성공! 부서 리스트:</h3>");
+        while (rs.next()) {
+            out.println("<p>📌 " + rs.getString("name") + "</p>");
+        }
+
+        rs.close();
+        stmt.close();
+        conn.close();
+    } catch(Exception e) {
+        out.println("<h3>❌ 연결 실패</h3>");
+        out.println("<pre>" + e.toString() + "</pre>");
+    }
+%>
+</body>
+</html>
+
+sudo vi /opt/tomcat9/webapps/ROOT/mssqltest.jsp 입력 후 편집화면에서 저장
+
+http://<133.186.200.103>:8080/mssqltest.jsp
+
+<img width="1094" height="309" alt="image" src="https://github.com/user-attachments/assets/acfb7c44-99f9-4246-8c95-cd5c4ed4f541" />
+
 

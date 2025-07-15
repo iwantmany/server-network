@@ -133,6 +133,7 @@ ls -lh /opt/tomcat9/lib/mssql-jdbc-12.4.2.jre11.jar
 </body>
 </html>
 
+
 sudo vi /opt/tomcat9/webapps/ROOT/mssqltest.jsp 입력 후 편집화면에서 저장
 
 http://<133.186.200.103>:8080/mssqltest.jsp

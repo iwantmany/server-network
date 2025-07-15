@@ -137,6 +137,6 @@ sudo vi /opt/tomcat9/webapps/ROOT/mssqltest.jsp 입력 후 편집화면에서 �
 
 http://<133.186.200.103>:8080/mssqltest.jsp
 
-<img width="1094" height="309" alt="image" src="https://github.com/user-attachments/assets/acfb7c44-99f9-4246-8c95-cd5c4ed4f541" />
+<img width="963" height="457" alt="image" src="https://github.com/user-attachments/assets/2fb58a54-3856-4bd4-93a9-1f8401c3af3d" />
 
 

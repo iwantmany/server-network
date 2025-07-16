@@ -405,3 +405,64 @@ mssqltest.jsp에서 부서 목록 출력 아래에 다음을 추가:
 
 <img width="602" height="258" alt="image" src="https://github.com/user-attachments/assets/1b5d5d67-6a4a-4569-b9b9-9e4abc4a8dd9" />
 
+✅  검색 기능 구현
+부서 이름 또는 그룹명을 입력받아 검색 결과만 보여주기
+
+파일 이름	
+searchDept.jsp	검색 입력 폼과 결과 출력
+
+vi /opt/tomcat9/webapps/ROOT/searchDept.jsp
+
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page import="java.sql.*" %>
+<html>
+<head><title>부서 검색</title></head>
+<body>
+    <h2>🔍 부서 검색</h2>
+    <form method="get" action="searchDept.jsp">
+        부서명 또는 그룹명: <input type="text" name="keyword">
+        <input type="submit" value="검색">
+    </form>
+
+<%
+    String keyword = request.getParameter("keyword");
+    if (keyword != null && !keyword.trim().equals("")) {
+        String url = "jdbc:sqlserver://192.168.0.56:1433;databaseName=AdventureWorks2016;encrypt=true;trustServerCertificate=true;";
+        String user = "webapp";
+        String password = "rjdls123!";
+
+        try {
+            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+            Connection conn = DriverManager.getConnection(url, user, password);
+
+            String sql = "SELECT DepartmentID, Name, GroupName FROM HumanResources.Department WHERE Name LIKE ? OR GroupName LIKE ?";
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, "%" + keyword + "%");
+            pstmt.setString(2, "%" + keyword + "%");
+            ResultSet rs = pstmt.executeQuery();
+
+            while (rs.next()) {
+%>
+                <p>📁 <%= rs.getString("Name") %> - <%= rs.getString("GroupName") %></p>
+<%
+            }
+
+            rs.close();
+            pstmt.close();
+            conn.close();
+        } catch(Exception e) {
+            out.println("❌ 에러 발생: " + e.toString());
+        }
+    }
+%>
+</body>
+</html>
+
+http://133.186.200.103:8080/searchDept.jsp
+
+<img width="554" height="262" alt="image" src="https://github.com/user-attachments/assets/247ca61c-f3ee-4ed7-93c8-09f9fa61b07a" />
+<img width="582" height="276" alt="image" src="https://github.com/user-attachments/assets/3c2552b3-761a-4f17-9671-33f72d5dd031" />
+
+
+
+

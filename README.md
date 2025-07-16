@@ -144,4 +144,167 @@ http://<133.186.200.103>:8080/mssqltest.jsp
 
 <img width="489" height="271" alt="image" src="https://github.com/user-attachments/assets/79956469-07fd-4526-8677-4349045be20b" />
 
+✅ [1단계] 부서 상세 조회 기능 추가
+
+vi /opt/tomcat9/webapps/ROOT/mssqltest.jsp
+
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page import="java.sql.*" %>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>부서 목록</title>
+</head>
+<body>
+<h2>📋 부서 목록</h2>
+<%
+    String url = "jdbc:sqlserver://192.168.0.56:1433;databaseName=AdventureWorks2016;encrypt=true;trustServerCertificate=true;";
+    String user = "webapp";
+    String password = "rjdls123!";
+
+    try {
+        Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+        Connection conn = DriverManager.getConnection(url, user, password);
+
+        String sql = "SELECT DepartmentID, Name, GroupName, ModifiedDate FROM HumanResources.Department ORDER BY DepartmentID DESC";
+        Statement stmt = conn.createStatement();
+        ResultSet rs = stmt.executeQuery(sql);
+
+        while (rs.next()) {
+            String id = rs.getString("DepartmentID");
+            String name = rs.getString("Name");
+            String group = rs.getString("GroupName");
+%>
+            <p>📁 <a href="deptDetail.jsp?id=<%=id%>"><%=name%></a> - <%=group%></p>
+<%
+        }
+
+        rs.close();
+        stmt.close();
+        conn.close();
+    } catch(Exception e) {
+        out.println("❌ 에러 발생: " + e.toString());
+    }
+%>
+</body>
+</html>
+
+vi /opt/tomcat9/webapps/ROOT/deptDetail.jsp
+
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page import="java.sql.*" %>
+<html>
+<head><title>부서 상세 정보</title></head>
+<body>
+<%
+    String deptId = request.getParameter("id");
+
+    String url = "jdbc:sqlserver://192.168.0.56:1433;databaseName=AdventureWorks2016;encrypt=true;trustServerCertificate=true;";
+    String user = "webapp";
+    String password = "rjdls123!";
+
+    try {
+        Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+        Connection conn = DriverManager.getConnection(url, user, password);
+
+        String sql = "SELECT * FROM HumanResources.Department WHERE DepartmentID = ?";
+        PreparedStatement pstmt = conn.prepareStatement(sql);
+        pstmt.setString(1, deptId);
+        ResultSet rs = pstmt.executeQuery();
+
+        if (rs.next()) {
+%>
+            <h2>📌 부서 상세 정보</h2>
+            <p><strong>부서 ID:</strong> <%=rs.getString("DepartmentID")%></p>
+            <p><strong>부서명:</strong> <%=rs.getString("Name")%></p>
+            <p><strong>그룹명:</strong> <%=rs.getString("GroupName")%></p>
+            <p><strong>수정일자:</strong> <%=rs.getString("ModifiedDate")%></p>
+            <br>
+            <a href="mssqltest.jsp">🔙 목록으로 돌아가기</a>
+<%
+        } else {
+            out.println("<p>해당 부서를 찾을 수 없습니다.</p>");
+        }
+
+        rs.close();
+        pstmt.close();
+        conn.close();
+    } catch(Exception e) {
+        out.println("<h3>❌ 오류 발생</h3>");
+        out.println("<pre>" + e.toString() + "</pre>");
+    }
+%>
+</body>
+</html>
+
+<img width="1478" height="968" alt="image" src="https://github.com/user-attachments/assets/ab87fcae-2e27-4a43-a6ab-7671eb0e3794" />
+
+<img width="670" height="510" alt="image" src="https://github.com/user-attachments/assets/cfc3f029-3507-459b-94e3-691030df9aaf" />
+
+✅ [2단계] 부서 삭제 기능
+
+1. deptDetail.jsp에 삭제 버튼 추가
+<a href="deleteDept.jsp?id=<%=rs.getString("DepartmentID")%>" onclick="return confirm('정말 삭제하시겠습니까?');">🗑️ 삭제</a>
+
+2. deleteDept.jsp 만들기
+vi /opt/tomcat9/webapps/ROOT/deleteDept.jsp
+
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page import="java.sql.*" %>
+<html>
+<head><title>부서 삭제</title></head>
+<body>
+<%
+    String deptId = request.getParameter("id");
+
+    String url = "jdbc:sqlserver://192.168.0.56:1433;databaseName=AdventureWorks2016;encrypt=true;trustServerCertificate=true;";
+    String user = "webapp";
+    String password = "rjdls123!";
+
+    try {
+        Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+        Connection conn = DriverManager.getConnection(url, user, password);
+
+        String sql = "DELETE FROM HumanResources.Department WHERE DepartmentID = ?";
+        PreparedStatement pstmt = conn.prepareStatement(sql);
+        pstmt.setString(1, deptId);
+        int result = pstmt.executeUpdate();
+
+        if (result > 0) {
+            out.println("<h3>🗑️ 부서 삭제 성공!</h3>");
+        } else {
+            out.println("<h3>❗ 삭제할 부서를 찾을 수 없습니다.</h3>");
+        }
+
+        pstmt.close();
+        conn.close();
+    } catch(Exception e) {
+        out.println("<h3>❌ 에러 발생</h3>");
+        out.println("<pre>" + e.toString() + "</pre>");
+    }
+%>
+
+<a href="mssqltest.jsp">🔙 목록으로 돌아가기</a>
+</body>
+</html>
+
+<img width="520" height="920" alt="image" src="https://github.com/user-attachments/assets/8299c62f-656c-425d-877f-a9ef3b44f9a4" />
+
+<img width="733" height="447" alt="image" src="https://github.com/user-attachments/assets/ab7f28da-d9e6-46a1-b6f7-82a453709329" />
+
+<img width="1564" height="408" alt="image" src="https://github.com/user-attachments/assets/06f90378-3571-4b71-8412-bd21707030bb" />
+
+<img width="2141" height="145" alt="image" src="https://github.com/user-attachments/assets/76259a96-bd37-4b1b-b0a6-f6cca3117ee2" />
+
+❌ DELETE가 실패한 이유: EmployeeDepartmentHistory.DepartmentID 컬럼이 Department 테이블의 DepartmentID를 참조하고 있기 때문
+
+DELETE FROM HumanResources.EmployeeDepartmentHistory
+WHERE DepartmentID = [삭제할 ID];
+
+DELETE FROM HumanResources.Department
+WHERE DepartmentID = [삭제할 ID];
+
+<img width="474" height="111" alt="image" src="https://github.com/user-attachments/assets/836d14bc-2cc9-4426-9512-160ae10c6c7b" />
+
+<img width="538" height="184" alt="image" src="https://github.com/user-attachments/assets/6eefa239-d8e7-4b31-a0e8-caa962703a2c" />
 

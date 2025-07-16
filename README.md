@@ -308,3 +308,100 @@ WHERE DepartmentID = [삭제할 ID];
 
 <img width="538" height="184" alt="image" src="https://github.com/user-attachments/assets/6eefa239-d8e7-4b31-a0e8-caa962703a2c" />
 
+✅ 3단계: 부서 정보 수정 기능 구현
+
+vi /opt/tomcat9/webapps/ROOT/editDepartment.jsp
+
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page import="java.sql.*" %>
+<%
+    String deptId = request.getParameter("id");
+    String url = "jdbc:sqlserver://192.168.0.56:1433;databaseName=AdventureWorks2016;encrypt=true;trustServerCertificate=true;";
+    String user = "webapp";
+    String password = "rjdls123!";
+    String name = "", groupName = "";
+
+    try {
+        Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+        Connection conn = DriverManager.getConnection(url, user, password);
+
+        String sql = "SELECT Name, GroupName FROM HumanResources.Department WHERE DepartmentID = ?";
+        PreparedStatement pstmt = conn.prepareStatement(sql);
+        pstmt.setString(1, deptId);
+        ResultSet rs = pstmt.executeQuery();
+
+        if (rs.next()) {
+            name = rs.getString("Name");
+            groupName = rs.getString("GroupName");
+        }
+
+        rs.close();
+        pstmt.close();
+        conn.close();
+    } catch(Exception e) {
+        out.println("❌ 에러: " + e.toString());
+    }
+%>
+<html>
+<head><title>부서 수정</title></head>
+<body>
+    <h2>✏️ 부서 수정</h2>
+    <form method="post" action="updateDepartment.jsp">
+        <input type="hidden" name="id" value="<%= deptId %>">
+        이름: <input type="text" name="name" value="<%= name %>"><br>
+        그룹명: <input type="text" name="groupName" value="<%= groupName %>"><br>
+        <input type="submit" value="수정">
+    </form>
+</body>
+</html>
+
+vi /opt/tomcat9/webapps/ROOT/updateDepartment.jsp
+
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page import="java.sql.*" %>
+<html>
+<head><title>부서 수정 처리</title></head>
+<body>
+<%
+    request.setCharacterEncoding("UTF-8");
+    String id = request.getParameter("id");
+    String name = request.getParameter("name");
+    String groupName = request.getParameter("groupName");
+
+    String url = "jdbc:sqlserver://192.168.0.56:1433;databaseName=AdventureWorks2016;encrypt=true;trustServerCertificate=true;";
+    String user = "webapp";
+    String password = "rjdls123!";
+
+    try {
+        Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+        Connection conn = DriverManager.getConnection(url, user, password);
+
+        String sql = "UPDATE HumanResources.Department SET Name = ?, GroupName = ?, ModifiedDate = GETDATE() WHERE DepartmentID = ?";
+        PreparedStatement pstmt = conn.prepareStatement(sql);
+        pstmt.setString(1, name);
+        pstmt.setString(2, groupName);
+        pstmt.setString(3, id);
+        int result = pstmt.executeUpdate();
+
+        out.println("<h3>✅ 수정 완료!</h3>");
+        out.println("<a href='mssqltest.jsp'>목록으로</a>");
+
+        pstmt.close();
+        conn.close();
+    } catch(Exception e) {
+        out.println("<h3>❌ 에러 발생</h3>");
+        out.println("<pre>" + e.toString() + "</pre>");
+    }
+%>
+</body>
+</html>
+
+목록 페이지(mssqltest.jsp)에 "수정" 링크 추가
+mssqltest.jsp에서 부서 목록 출력 아래에 다음을 추가:
+
+<a href='editDepartment.jsp?id=<%= rs.getInt("DepartmentID") %>'>수정</a>
+
+<img width="568" height="909" alt="image" src="https://github.com/user-attachments/assets/624f1f44-eda7-41d8-b19d-cbeb037f3ddc" />
+
+<img width="602" height="258" alt="image" src="https://github.com/user-attachments/assets/1b5d5d67-6a4a-4569-b9b9-9e4abc4a8dd9" />
+

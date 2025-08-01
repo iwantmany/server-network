@@ -463,6 +463,117 @@ http://133.186.200.103:8080/searchDept.jsp
 <img width="554" height="262" alt="image" src="https://github.com/user-attachments/assets/247ca61c-f3ee-4ed7-93c8-09f9fa61b07a" />
 <img width="582" height="276" alt="image" src="https://github.com/user-attachments/assets/3c2552b3-761a-4f17-9671-33f72d5dd031" />
 
+1. 로그인 페이지 만들기: login.jsp
+
+   vi /opt/tomcat9/webapps/ROOT/login.jsp
+
+   <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>로그인</title>
+<style>
+    body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
+    .login-container { width: 300px; margin: 0 auto; padding: 20px; border: 1px solid #ccc; border-radius: 5px; }
+    input[type="text"], input[type="password"] { width: 90%; padding: 10px; margin: 5px 0; }
+    input[type="submit"] { width: 100%; padding: 10px; background-color: #007bff; color: white; border: none; cursor: pointer; }
+    .error-message { color: red; }
+</style>
+</head>
+<body>
+    <div class="login-container">
+        <h2>로그인</h2>
+        <form action="login_process.jsp" method="post">
+            <input type="text" name="username" placeholder="아이디" required><br>
+            <input type="password" name="password" placeholder="비밀번호" required><br>
+            <%-- 로그인 실패 시 에러 메시지 표시 --%>
+            <% if(request.getParameter("error") != null) { %>
+                <p class="error-message">아이디 또는 비밀번호가 올바르지 않습니다.</p>
+            <% } %>
+            <input type="submit" value="로그인">
+        </form>
+    </div>
+</body>
+</html>
+
+2. 로그인 처리 로직 구현: login_process.jsp
+
+   vi /opt/tomcat9/webapps/ROOT/login_process.jsp
+
+   <%@ page import="java.sql.*" %>
+<%@ page import="org.mindrot.jbcrypt.BCrypt" %>
+<%
+request.setCharacterEncoding("UTF-8");
+
+String username = request.getParameter("username");
+String password = request.getParameter("password");
+
+if (username == null || password == null) {
+    response.sendRedirect("login.jsp?error=1");
+    return;
+}
+
+// JDBC 연결 정보 (기존에 사용하던 것과 동일)
+String url = "jdbc:sqlserver://192.168.0.56:1433;databaseName=AdventureWorks2016;encrypt=true;trustServerCertificate=true;";
+String user = "webapp";
+String dbPassword = "rjdls123!";
+
+Connection conn = null;
+PreparedStatement pstmt = null;
+ResultSet rs = null;
+
+try {
+    Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+    conn = DriverManager.getConnection(url, user, dbPassword);
+
+    String sql = "SELECT PasswordHash, IsAdmin FROM dbo.Users WHERE Username = ?";
+    pstmt = conn.prepareStatement(sql);
+    pstmt.setString(1, username);
+    rs = pstmt.executeQuery();
+
+    if (rs.next()) {
+        String storedHash = rs.getString("PasswordHash");
+        // 입력된 비밀번호와 저장된 해시값 비교
+        if (BCrypt.checkpw(password, storedHash)) {
+            // 로그인 성공! 세션에 사용자 정보 저장
+            session.setAttribute("loggedinUser", username);
+            session.setAttribute("isAdmin", rs.getBoolean("IsAdmin"));
+            
+            // 메인 페이지로 리다이렉트
+            response.sendRedirect("mssqltest.jsp");
+        } else {
+            // 비밀번호 불일치
+            response.sendRedirect("login.jsp?error=1");
+        }
+    } else {
+        // 사용자가 존재하지 않음
+        response.sendRedirect("login.jsp?error=1");
+    }
+
+} catch (Exception e) {
+    e.printStackTrace();
+    response.sendRedirect("login.jsp?error=1");
+} finally {
+    if (rs != null) try { rs.close(); } catch(SQLException ignored) {}
+    if (pstmt != null) try { pstmt.close(); } catch(SQLException ignored) {}
+    if (conn != null) try { conn.close(); } catch(SQLException ignored) {}
+}
+%>
+
+3. 로그아웃 기능 구현: logout.jsp
+
+   vi /opt/tomcat9/webapps/ROOT/logout.jsp
+
+   <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%
+    // 세션을 무효화하여 모든 사용자 정보를 삭제
+    session.invalidate();
+
+    // 로그인 페이지로 리다이렉트
+    response.sendRedirect("login.jsp");
+
+<img width="1145" height="362" alt="image" src="https://github.com/user-attachments/assets/ffac8afb-efa5-494a-bf84-91d283ea89a2" />
 
 
 
